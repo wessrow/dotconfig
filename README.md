@@ -1,6 +1,6 @@
 # Dotfiles Bootstrap
 
-This repo is intended to be cloned to `~/.config` and used as the single source of truth for shell/editor/tooling setup.
+This repo is intended to be cloned anywhere you want and used as the single source of truth for shell/editor/tooling setup.
 
 Only config files are tracked here. Third-party source trees such as `oh-my-zsh`, zsh plugins/themes, and tmux plugins are installed locally by `install.sh` and ignored by git.
 
@@ -9,8 +9,8 @@ Only config files are tracked here. Third-party source trees such as `oh-my-zsh`
 ## 1) Clone this repo
 
 ```bash
-git clone <your-repo-url> ~/.config
-cd ~/.config
+git clone <your-repo-url> <path-to-dotfiles>
+cd <path-to-dotfiles>
 ```
 
 ## 2) Point Zsh to this repo
@@ -19,14 +19,14 @@ Create or edit `~/.zshenv`:
 
 ```zsh
 export PATH="$HOME/.local/bin:$PATH"
-export ZDOTDIR="$HOME/.config/zsh"
+export ZDOTDIR="<path-to-dotfiles>/zsh"
 ```
 
 ## 3) Run the installer
 
 ```bash
-chmod +x ~/.config/install.sh
-~/.config/install.sh
+chmod +x ./install.sh
+./install.sh
 ```
 
 ## 4) Start a new shell
@@ -44,7 +44,7 @@ exec zsh
 ## Daily Update on Existing Machines
 
 ```bash
-cd ~/.config
+cd <path-to-dotfiles>
 git pull
-~/.config/install.sh
+./install.sh
 ```
