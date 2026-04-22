@@ -1,0 +1,15 @@
+[submodule "oh-my-zsh"]
+	path = oh-my-zsh
+	url = https://github.com/ohmyzsh/ohmyzsh.git
+[submodule "tmux/plugins/tmux"]
+	path = tmux/plugins/tmux
+	url = https://github.com/dracula/tmux
+[submodule "tmux/plugins/tmux-sensible"]
+	path = tmux/plugins/tmux-sensible
+	url = https://github.com/tmux-plugins/tmux-sensible
+[submodule "tmux/plugins/tmux-tokyo-night"]
+	path = tmux/plugins/tmux-tokyo-night
+	url = https://github.com/fabioluciano/tmux-tokyo-night
+[submodule "tmux/plugins/tpm"]
+	path = tmux/plugins/tpm
+	url = https://github.com/tmux-plugins/tpm
