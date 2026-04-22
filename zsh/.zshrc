@@ -36,10 +36,14 @@ ZSH_TMUX_AUTONAME_SESSION=true
 PYTHON_VENV_NAMES=($PYTHON_VENV_NAME venv)
 PYTHON_AUTO_VRUN=true
 
-source $ZSH/oh-my-zsh.sh
+if [[ -r "$ZSH/oh-my-zsh.sh" ]]; then
+  source "$ZSH/oh-my-zsh.sh"
+else
+  echo "oh-my-zsh is not installed yet. Run ~/.config/install.sh"
+fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.config/zsh/.p10k.zsh ]] || source ~/.config/zsh/.p10k.zsh
+[[ ! -f ~/.config/zsh/.p10k.zsh ]] || [[ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]] || source ~/.config/zsh/.p10k.zsh
 ### ALWAYS ASSIGN CORRECT GOPATH 
 export GOPATH=/Users/$USER/go 
 export PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/bin:/Users/$USER/go/bin

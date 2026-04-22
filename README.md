@@ -2,6 +2,8 @@
 
 This repo is intended to be cloned to `~/.config` and used as the single source of truth for shell/editor/tooling setup.
 
+Only config files are tracked here. Third-party source trees such as `oh-my-zsh`, zsh plugins/themes, and tmux plugins are installed locally by `install.sh` and ignored by git.
+
 ## Fresh Machine Setup
 
 ## 1) Clone this repo
@@ -20,41 +22,29 @@ export PATH="$HOME/.local/bin:$PATH"
 export ZDOTDIR="$HOME/.config/zsh"
 ```
 
-Then start a new shell:
+## 3) Run the installer
+
+```bash
+chmod +x ~/.config/install.sh
+~/.config/install.sh
+```
+
+## 4) Start a new shell
 
 ```bash
 exec zsh
 ```
 
-## 3) Install required CLI tools
-
-```bash
-brew install fzf
-brew install fd
-brew install bat
-brew install eza
-brew install tmux
-```
-
-## 4) Optional tools used by aliases/config
-
-```bash
-brew install neovim
-brew install libpq
-brew install bun
-```
-
 ## Reproducibility Notes
 
-- `oh-my-zsh` is tracked directly in this repo at `~/.config/oh-my-zsh`.
-- `nvim` (including `init.lua`) is tracked directly in this repo at `~/.config/nvim`.
-- Custom Oh My Zsh plugins/themes are tracked in this repo at `~/.config/zsh/oh-my-zsh-custom`.
-- `~/.config/zsh/.zshrc` sets `ZSH_CUSTOM` to that tracked directory, so your custom plugin/theme set is reproducible across machines.
-- tmux plugins under `~/.config/tmux/plugins` are tracked directly in this repo.
+- Tracked: shell config, tmux config, Neovim config, and bootstrap scripts.
+- Installed locally by `install.sh`: `oh-my-zsh`, `powerlevel10k`, zsh plugins, and tmux plugins.
+- Neovim plugins are managed by `lazy.nvim` from inside `nvim/init.lua`; they are not vendored in this repo.
 
 ## Daily Update on Existing Machines
 
 ```bash
 cd ~/.config
 git pull
+~/.config/install.sh
 ```

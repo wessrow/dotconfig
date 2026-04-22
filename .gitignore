@@ -4,5 +4,8 @@ raycast
 wireshark
 colima
 iterm2
+/oh-my-zsh/
+/tmux/plugins/
+/zsh/oh-my-zsh-custom/
 /zsh/.zsh_history
 /zsh/.zcomp*
