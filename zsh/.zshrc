@@ -113,7 +113,7 @@ export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
 
 # bun completions
-[ -s "/Users/$USER/.bun/_bun" ] && source "/Users/gustav/.bun/_bun"
+[ -s "/Users/$USER/.bun/_bun" ] && source "/Users/$USER/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"

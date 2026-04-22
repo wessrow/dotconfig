@@ -19,7 +19,7 @@ Create or edit `~/.zshenv`:
 
 ```zsh
 export PATH="$HOME/.local/bin:$PATH"
-export ZDOTDIR="~/.config/zsh"
+export ZDOTDIR="$HOME/.config/zsh"
 ```
 
 ## 3) Run the installer
@@ -28,6 +28,15 @@ export ZDOTDIR="~/.config/zsh"
 chmod +x ./install.sh
 ./install.sh
 ```
+
+`install.sh` installs these Homebrew packages (when Homebrew is available):
+
+```bash
+brew install bat eza fd fzf libpq neovim tmux
+brew install oven-sh/bun/bun
+```
+
+You can install them manually first if you prefer; the script will skip already-installed packages.
 
 ## 4) Start a new shell
 
