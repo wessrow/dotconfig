@@ -9,8 +9,8 @@ Only config files are tracked here. Third-party source trees such as `oh-my-zsh`
 ## 1) Clone this repo
 
 ```bash
-git clone <your-repo-url> <path-to-dotfiles>
-cd <path-to-dotfiles>
+git clone https://github.com/wessrow/dotconfig.git ~/.config
+cd ~/.config
 ```
 
 ## 2) Point Zsh to this repo
@@ -19,7 +19,7 @@ Create or edit `~/.zshenv`:
 
 ```zsh
 export PATH="$HOME/.local/bin:$PATH"
-export ZDOTDIR="<path-to-dotfiles>/zsh"
+export ZDOTDIR="~/.config/zsh"
 ```
 
 ## 3) Run the installer
@@ -44,7 +44,7 @@ exec zsh
 ## Daily Update on Existing Machines
 
 ```bash
-cd <path-to-dotfiles>
+cd ~/.config
 git pull
 ./install.sh
 ```
