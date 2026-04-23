@@ -12,8 +12,11 @@ fi
 export ZSH="$HOME/.config/oh-my-zsh"
 export ZSH_CUSTOM="$HOME/.config/zsh/oh-my-zsh-custom"
 export XDG_CONFIG_HOME="$HOME/.config/"
-# Ensure tmux is discoverable before Oh My Zsh plugins initialize.
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:$PATH"
+
+# Set up PATH early so tmux and other tools are found before plugins load
+export GOPATH="/Users/$USER/go"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/opt/homebrew/opt/libpq/bin:/Users/$USER/go/bin:/Users/$USER/.bun/bin:/Users/$USER/Documents/dev/misc:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
@@ -29,7 +32,15 @@ DISABLE_AUTO_TITLE="true"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+# Plugin configuration - increase ulimit for file descriptors
+ulimit -n 4096 2>/dev/null || true
+
+# Keep all plugins but configure async behavior
 plugins=(docker git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete tmux python gitignore dotenv)
+
+# Configure zsh-autocomplete to be less aggressive with async
+ZSH_AUTOCOMPLETE_EXPERIMENTAL=true
+ZSH_AUTOSUGGEST_USE_ASYNC=false
 
 ZSH_TMUX_AUTOSTART=true
 ZSH_TMUX_AUTONAME_SESSION=true
@@ -43,12 +54,9 @@ else
 fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.config/zsh/.p10k.zsh ]] || [[ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]] || source ~/.config/zsh/.p10k.zsh
-### ALWAYS ASSIGN CORRECT GOPATH 
-export GOPATH=/Users/$USER/go 
-export PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/bin:/Users/$USER/go/bin
-PATH=/Users/$USER/Documents/dev/misc:$PATH
-export PATH=/Users/$USER/go/bin/golint:$PATH
+if [[ -f ~/.config/zsh/.p10k.zsh ]] && [[ -d "$ZSH_CUSTOM/themes/powerlevel10k" ]]; then
+  source ~/.config/zsh/.p10k.zsh
+fi
 
 # Loading `.env` on VS Code embeded terminal
 if [[ "$TERM_PROGRAM" == "vscode" && -f ".env" ]]; then
@@ -58,8 +66,10 @@ fi
 
 # ---- FZF -----
 
-# Set up fzf key bindings and fuzzy completion
-eval "$(fzf --zsh)"
+# Set up fzf key bindings and fuzzy completion (safe eval)
+if command -v fzf &> /dev/null; then
+  eval "$(fzf --zsh 2>/dev/null)" || true
+fi
 
 # -- Use fd instead of fzf --
 
@@ -108,9 +118,6 @@ alias dev="cd ~/Documents/dev/"
 HISTTIMEFORMAT="%d/%m/%y %T "
 HISTTIMEFORMAT="%F %T "
 export KUBECONFIG=~/.kube/config:~/.kube/config_lab
-
-export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
-export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
 
 # bun completions
 [ -s "/Users/$USER/.bun/_bun" ] && source "/Users/$USER/.bun/_bun"
