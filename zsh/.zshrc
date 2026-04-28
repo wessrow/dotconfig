@@ -36,7 +36,7 @@ DISABLE_AUTO_TITLE="true"
 ulimit -n 4096 2>/dev/null || true
 
 # Keep all plugins but configure async behavior
-plugins=(docker git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete tmux python gitignore dotenv)
+plugins=(docker git zsh-autosuggestions fast-syntax-highlighting zsh-autocomplete tmux python gitignore dotenv)
 
 # Configure zsh-autocomplete to be less aggressive with async
 ZSH_AUTOCOMPLETE_EXPERIMENTAL=true
