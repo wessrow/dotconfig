@@ -92,6 +92,7 @@ _fzf_compgen_dir() {
 # ---- Eza (better ls) -----
 
 alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time"
+alias tui="/Users/gustav/Documents/dev/acebit/naas-tui/run_tui.sh"
 
 export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
@@ -126,3 +127,7 @@ export KUBECONFIG=~/.kube/config:~/.kube/config_lab
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export KUBECONFIG=/Users/gustav/vgr-klusters:/Users/gustav/.kube/acebit-kluster
+
+# opencode
+export PATH=/Users/gustav/.opencode/bin:$PATH
