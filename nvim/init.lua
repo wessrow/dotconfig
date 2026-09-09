@@ -93,6 +93,10 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
+-- Disable netrw in favour of nvim-tree (must happen before plugins load)
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -921,6 +925,52 @@ require('lazy').setup({
     --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+  },
+
+  { -- View markdown files rendered inline (buffer stays editable)
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' },
+    ft = { 'markdown' },
+    cmd = { 'RenderMarkdown' },
+    opts = {},
+    init = function()
+      -- Shorthand for `:RenderMarkdown toggle`: capital `:Md`, plus a lowercase
+      -- `:md` that only expands when it is the entire command line.
+      vim.api.nvim_create_user_command('Md', 'RenderMarkdown toggle', { desc = 'Toggle rendered markdown' })
+      vim.cmd [[cnoreabbrev <expr> md (getcmdtype() ==# ':' && getcmdline() ==# 'md') ? 'RenderMarkdown toggle' : 'md']]
+    end,
+  },
+
+  { -- File explorer sidebar
+    'nvim-tree/nvim-tree.lua',
+    dependencies = { { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font } },
+    lazy = false, -- load at startup so it can be shown by default
+    keys = {
+      { '<leader>e', '<cmd>NvimTreeToggle<cr>', desc = 'Toggle file [e]xplorer' },
+      { '<leader>E', '<cmd>NvimTreeFindFileToggle<cr>', desc = 'File [E]xplorer, reveal current file' },
+    },
+    opts = {
+      view = { width = 35 },
+      renderer = { group_empty = true },
+      filters = { dotfiles = false },
+      update_focused_file = { enable = true },
+    },
+    config = function(_, opts)
+      require('nvim-tree').setup(opts)
+
+      -- Open the tree on startup, keeping focus in the file you opened
+      vim.api.nvim_create_autocmd('VimEnter', {
+        callback = function(data)
+          local real_file = vim.fn.filereadable(data.file) == 1
+          local no_name = data.file == '' and vim.bo[data.buf].buftype == ''
+          local is_dir = vim.fn.isdirectory(data.file) == 1
+          if not real_file and not no_name and not is_dir then
+            return -- skip for things like `git commit`, `:help`, startup dashboards
+          end
+          require('nvim-tree.api').tree.toggle { focus = false, find_file = true }
+        end,
+      })
+    end,
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
