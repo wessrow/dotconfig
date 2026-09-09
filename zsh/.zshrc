@@ -32,15 +32,15 @@ DISABLE_AUTO_TITLE="true"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-# Plugin configuration - increase ulimit for file descriptors
+# Raise the file-descriptor limit (harmless; a few tools open many files)
 ulimit -n 4096 2>/dev/null || true
 
-# Keep all plugins but configure async behavior
-plugins=(docker git zsh-autosuggestions fast-syntax-highlighting zsh-autocomplete tmux python gitignore dotenv)
-
-# Configure zsh-autocomplete to be less aggressive with async
-ZSH_AUTOCOMPLETE_EXPERIMENTAL=true
-ZSH_AUTOSUGGEST_USE_ASYNC=false
+# NOTE: fast-syntax-highlighting must be the LAST ZLE plugin in this list -
+# it wraps every widget, so anything loaded after it silently breaks.
+# zsh-autocomplete was removed: it rebinds the arrow keys to async menu
+# widgets whose worker processes die in tmux panes (completion stops until
+# `exec zsh`) and whose redraws corrupt Up-arrow history recall under p10k.
+plugins=(docker git tmux python gitignore dotenv zsh-autosuggestions fast-syntax-highlighting)
 
 ZSH_TMUX_AUTOSTART=true
 ZSH_TMUX_AUTONAME_SESSION=true
@@ -116,8 +116,34 @@ alias vim="nvim"
 alias cat="bat"
 alias dev="cd ~/Documents/dev/"
 
-HISTTIMEFORMAT="%d/%m/%y %T "
-HISTTIMEFORMAT="%F %T "
+# ---- History ----
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_FCNTL_LOCK        # atomic locking - safe concurrent writes from many tmux panes
+setopt HIST_IGNORE_ALL_DUPS  # keep only the most recent copy of any duplicated command
+setopt HIST_REDUCE_BLANKS
+
+# ---- Down = prefix-search on what's already typed ----
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[[B' down-line-or-beginning-search  # Down
+bindkey '^[OB' down-line-or-beginning-search  # Down (application cursor mode)
+
+# ---- Up = fzf history picker: numbered, fuzzy, scrollable (same as Ctrl-R) ----
+# fzf-history-widget is defined by `eval "$(fzf --zsh)"` above. Fall back to
+# prefix search if fzf isn't available.
+if (( $+widgets[fzf-history-widget] )); then
+  bindkey '^[[A' fzf-history-widget           # Up
+  bindkey '^[OA' fzf-history-widget           # Up (application cursor mode)
+else
+  bindkey '^[[A' up-line-or-beginning-search
+  bindkey '^[OA' up-line-or-beginning-search
+fi
+
+# Classic Ctrl-R look: bottom strip, prompt at the bottom, matches listed above it
+export FZF_CTRL_R_OPTS="--height=40%"
+
 export KUBECONFIG=~/.kube/config:~/.kube/config_lab
 
 # bun completions
