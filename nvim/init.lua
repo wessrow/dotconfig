@@ -135,6 +135,10 @@ vim.opt.smartcase = true
 -- Keep signcolumn on by default
 vim.opt.signcolumn = 'yes'
 
+-- Cap the height of completion popups (insert-mode and command-line) so a long
+-- list scrolls instead of filling the screen.
+vim.opt.pumheight = 12
+
 -- Decrease update time
 vim.opt.updatetime = 250
 
@@ -256,7 +260,22 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      -- Show the current-line blame immediately instead of after a pause
+      current_line_blame_opts = { delay = 0 },
     },
+    config = function(_, opts)
+      require('gitsigns').setup(opts)
+
+      -- Shorthand for toggling the inline current-line blame
+      vim.api.nvim_create_user_command('GitBlame', function()
+        require('gitsigns').toggle_current_line_blame()
+      end, { desc = 'Toggle git blame for the current line' })
+    end,
+  },
+
+  { -- Git wrapper: :Git (:G) for status/commit/etc., :Git blame, :Gdiffsplit, ...
+    'tpope/vim-fugitive',
+    cmd = { 'Git', 'G', 'Gdiffsplit', 'Gread', 'Gwrite', 'Gedit', 'GBrowse' },
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -729,7 +748,7 @@ require('lazy').setup({
 
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
-    event = 'InsertEnter',
+    event = { 'InsertEnter', 'CmdlineEnter' },
     dependencies = {
       -- Snippet Engine & its associated nvim-cmp source
       {
@@ -762,6 +781,11 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+
+      -- Command-line completion: popup menu of `:` commands (and their
+      -- sub-commands / module args) plus `/` `?` search history.
+      'hrsh7th/cmp-cmdline',
+      'hrsh7th/cmp-buffer',
     },
     config = function()
       -- See `:help cmp`
@@ -840,6 +864,31 @@ require('lazy').setup({
           { name = 'path' },
         },
       }
+
+      -- Command-line completions all report the same generic kind, so drop the
+      -- kind column and show just the candidate text.
+      local cmdline_formatting = { fields = { 'abbr' } }
+
+      -- `:` command line — suggest commands, then their arguments/modules.
+      cmp.setup.cmdline(':', {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = cmp.config.sources({
+          { name = 'path' },
+        }, {
+          { name = 'cmdline' },
+        }),
+        matching = { disallow_symbol_nonprefix_matching = false },
+        formatting = cmdline_formatting,
+      })
+
+      -- `/` and `?` search — complete words from the current buffer.
+      cmp.setup.cmdline({ '/', '?' }, {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = {
+          { name = 'buffer' },
+        },
+        formatting = cmdline_formatting,
+      })
     end,
   },
 
