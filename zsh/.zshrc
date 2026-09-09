@@ -47,6 +47,10 @@ ZSH_TMUX_AUTONAME_SESSION=true
 PYTHON_VENV_NAMES=($PYTHON_VENV_NAME venv)
 PYTHON_AUTO_VRUN=true
 
+# Show date+time in `history` output. OMZ turns this into `alias history='omz_history -E'`
+# (dd.mm.yyyy hh:mm). `history | grep ...` still works - it's just piped stdout.
+HIST_STAMPS="dd.mm.yyyy"
+
 if [[ -r "$ZSH/oh-my-zsh.sh" ]]; then
   source "$ZSH/oh-my-zsh.sh"
 else
@@ -130,19 +134,41 @@ zle -N down-line-or-beginning-search
 bindkey '^[[B' down-line-or-beginning-search  # Down
 bindkey '^[OB' down-line-or-beginning-search  # Down (application cursor mode)
 
-# ---- Up = fzf history picker: numbered, fuzzy, scrollable (same as Ctrl-R) ----
-# fzf-history-widget is defined by `eval "$(fzf --zsh)"` above. Fall back to
-# prefix search if fzf isn't available.
-if (( $+widgets[fzf-history-widget] )); then
-  bindkey '^[[A' fzf-history-widget           # Up
-  bindkey '^[OA' fzf-history-widget           # Up (application cursor mode)
+# Classic Ctrl-R look: bottom strip, prompt at the bottom, matches listed above it
+export FZF_CTRL_R_OPTS="--height=40%"
+
+# ---- Up / Ctrl-R = fzf history picker WITH date+time columns ----
+# Overrides fzf's own fzf-history-widget (which can't show timestamps) with one
+# that feeds `fc -rlE` (event number + dd.mm.yyyy hh:mm + command) into fzf.
+# --nth=2.. => your query matches the date/time and command, not the event number.
+# A picked line is placed on the prompt, not run. Falls back to prefix search
+# if fzf is missing. (Multi-line history entries: only their first row selects.)
+if command -v fzf >/dev/null 2>&1; then
+  fzf-history-widget() {
+    emulate -L zsh
+    setopt pipefail no_aliases 2>/dev/null
+    zmodload -F zsh/parameter p:history 2>/dev/null
+    local selected num
+    selected=$(
+      fc -rlE 1 |
+      FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS-} ${FZF_CTRL_R_OPTS-} --scheme=history --nth=2.. --query=${(qqq)LBUFFER} +m" \
+      fzf
+    ) || { zle reset-prompt; return 0 }
+    num=${${(z)selected}[1]}
+    if [[ $num == <-> && -n ${history[$num]} ]]; then
+      BUFFER=${history[$num]}
+      CURSOR=${#BUFFER}
+    fi
+    zle reset-prompt
+  }
+  zle -N fzf-history-widget
+  bindkey '^[[A' fzf-history-widget    # Up
+  bindkey '^[OA' fzf-history-widget    # Up (application cursor mode)
+  bindkey '^R'   fzf-history-widget    # Ctrl-R (same view, with timestamps)
 else
   bindkey '^[[A' up-line-or-beginning-search
   bindkey '^[OA' up-line-or-beginning-search
 fi
-
-# Classic Ctrl-R look: bottom strip, prompt at the bottom, matches listed above it
-export FZF_CTRL_R_OPTS="--height=40%"
 
 export KUBECONFIG=~/.kube/config:~/.kube/config_lab
 
