@@ -37,10 +37,13 @@ ulimit -n 4096 2>/dev/null || true
 
 # NOTE: fast-syntax-highlighting must be the LAST ZLE plugin in this list -
 # it wraps every widget, so anything loaded after it silently breaks.
+# fzf-tab must come before any widget-wrapping plugin (zsh-autosuggestions,
+# fast-syntax-highlighting); it turns TAB completion into an fzf picker
+# (e.g. `git checkout <TAB>` lists local branches with a commit preview).
 # zsh-autocomplete was removed: it rebinds the arrow keys to async menu
 # widgets whose worker processes die in tmux panes (completion stops until
 # `exec zsh`) and whose redraws corrupt Up-arrow history recall under p10k.
-plugins=(docker git tmux python gitignore dotenv zsh-autosuggestions fast-syntax-highlighting)
+plugins=(docker git tmux python gitignore dotenv fzf-tab zsh-autosuggestions fast-syntax-highlighting)
 
 ZSH_TMUX_AUTOSTART=true
 ZSH_TMUX_AUTONAME_SESSION=true
@@ -74,6 +77,19 @@ fi
 if command -v fzf &> /dev/null; then
   eval "$(fzf --zsh 2>/dev/null)" || true
 fi
+
+# ---- fzf-tab (TAB completion via fzf) ----
+# Loaded by the fzf-tab plugin above. `git checkout <TAB>` -> fuzzy branch list.
+zstyle ':completion:*' menu no                        # hand the menu to fzf-tab
+zstyle ':completion:*:descriptions' format '[%d]'     # group headers fzf-tab can label
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # case-insensitive matching
+zstyle ':fzf-tab:*' fzf-flags --height=40% --border    # match the Ctrl-R strip
+zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'          # TAB confirms the highlighted item
+zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
+  'git log --oneline --graph --color=always -20 "$word" 2>/dev/null'
+zstyle ':fzf-tab:complete:git-switch:*' fzf-preview \
+  'git log --oneline --graph --color=always -20 "$word" 2>/dev/null'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --tree --color=always {} 2>/dev/null | head -200'
 
 # -- Use fd instead of fzf --
 
