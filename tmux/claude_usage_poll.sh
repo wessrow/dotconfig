@@ -13,7 +13,9 @@
 #   (Linux). Do NOT call it inline from the tmux status line.
 #
 # Cache file: ${XDG_CACHE_HOME:-~/.cache}/claude-usage/usage.json
-#   {"session_pct": <int>, "week_pct": <int>, "updated": <epoch seconds>}
+#   {"session_pct": <int>, "week_pct": <int>,
+#    "session_reset": <epoch seconds|null>, "week_reset": <epoch seconds|null>,
+#    "updated": <epoch seconds>}
 # On failure the previous cache is left untouched (last good value wins).
 
 set -euo pipefail
@@ -56,6 +58,8 @@ fi
 
 python3 - "$CACHE_FILE" "$RESP_FILE" <<'PYEOF'
 import json, os, re, sys, time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 cache_file, resp_file = sys.argv[1], sys.argv[2]
 with open(resp_file) as f:
@@ -77,7 +81,41 @@ if session is None and week is None:
     sys.stderr.write(time.strftime("%F %T") + " could not parse usage from:\n" + text[:400] + "\n")
     sys.exit(1)
 
-payload = {"session_pct": session, "week_pct": week, "updated": int(time.time())}
+# "resets Sep 17 at 12:30pm (Europe/Stockholm)" -> epoch seconds. The text
+# has no year, so we assume the current one and roll forward a year if that
+# lands more than a few days in the past (only matters right at Dec/Jan).
+# Minutes are omitted on the hour (e.g. "2pm"), so they're optional here.
+def reset_epoch(label_pattern):
+    m = re.search(
+        label_pattern + r".*?resets\s+([A-Za-z]{3,9} \d{1,2}) at (\d{1,2}(?::\d{2})?(?:am|pm)) \(([^)]+)\)",
+        text, re.IGNORECASE,
+    )
+    if not m:
+        return None
+    date_str, time_str, tz_str = m.groups()
+    fmt = "%I:%M%p" if ":" in time_str else "%I%p"
+    try:
+        tz = ZoneInfo(tz_str)
+        dt = datetime.strptime(f"{date_str} {datetime.now(tz).year} {time_str}", f"%b %d %Y {fmt}")
+        dt = dt.replace(tzinfo=tz)
+        epoch = dt.timestamp()
+        if epoch < time.time() - 3 * 24 * 3600:
+            dt = dt.replace(year=dt.year + 1)
+            epoch = dt.timestamp()
+        return int(epoch)
+    except Exception:
+        return None
+
+session_reset = reset_epoch(r"Current session:")
+week_reset = reset_epoch(r"Current week \(all models\):")
+
+payload = {
+    "session_pct": session,
+    "week_pct": week,
+    "session_reset": session_reset,
+    "week_reset": week_reset,
+    "updated": int(time.time()),
+}
 tmp = cache_file + ".tmp"
 with open(tmp, "w") as f:
     json.dump(payload, f)
