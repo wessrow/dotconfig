@@ -186,8 +186,6 @@ else
   bindkey '^[OA' up-line-or-beginning-search
 fi
 
-export KUBECONFIG=~/.kube/config:~/.kube/config_lab
-
 # bun completions
 [ -s "/Users/$USER/.bun/_bun" ] && source "/Users/$USER/.bun/_bun"
 
@@ -195,7 +193,7 @@ export KUBECONFIG=~/.kube/config:~/.kube/config_lab
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-export KUBECONFIG=/Users/gustav/vgr-klusters:/Users/gustav/.kube/acebit-kluster
+export KUBECONFIG=$HOME/.kube/customerfirst:$HOME/.kube/nms-dev:$HOME/.kube/nms-prod-secondary:$HOME/.kube/naas-berget
 
 # opencode
 export PATH=/Users/gustav/.opencode/bin:$PATH
