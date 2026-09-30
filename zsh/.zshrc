@@ -170,7 +170,9 @@ if command -v fzf >/dev/null 2>&1; then
       FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS-} ${FZF_CTRL_R_OPTS-} --scheme=history --nth=2.. --query=${(qqq)LBUFFER} +m" \
       fzf
     ) || { zle reset-prompt; return 0 }
-    num=${${(z)selected}[1]}
+    # Leading event number only; `fc -l` appends `*` to edited events (e.g. "123*")
+    # and (z)-splitting the whole line chokes on unbalanced quotes in the command.
+    [[ $selected =~ '^ *([0-9]+)' ]] && num=${match[1]}
     if [[ $num == <-> && -n ${history[$num]} ]]; then
       BUFFER=${history[$num]}
       CURSOR=${#BUFFER}
